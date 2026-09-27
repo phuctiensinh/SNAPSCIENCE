@@ -144,7 +144,6 @@ function HomeScreen({
           <span className="font-black tracking-[-.04em]">Snap<span className="text-[#1587e8]">Science</span></span>
         </div>
         <div className="flex items-center gap-2">
-          <ModeBadge hasUserApiKey={hasUserApiKey} onClick={onOpenPrivacy} />
           <IconButton label="Quyền riêng tư & Cài đặt" onClick={onOpenPrivacy}>
             <Settings className="size-5" />
           </IconButton>
@@ -1167,7 +1166,7 @@ function CompleteScreen({
   )
 }
 
-function PrivacyModal({ onClose }: { onClose: () => void }) {
+function PrivacyModal({ onClose, onKeySaved }: { onClose: () => void; onKeySaved?: () => void }) {
   const [userApiKey, setUserApiKey] = useState('')
   const [isSaved, setIsSaved] = useState(false)
   const [validating, setValidating] = useState(false)
@@ -1186,6 +1185,7 @@ function PrivacyModal({ onClose }: { onClose: () => void }) {
       localStorage.setItem('snapscience_gemini_api_key', cleanKey)
       localStorage.setItem('snapscience_user_api_key', cleanKey)
       setIsSaved(true)
+      onKeySaved?.()
       setTimeout(() => setIsSaved(false), 2000)
     }
   }
@@ -1198,6 +1198,8 @@ function PrivacyModal({ onClose }: { onClose: () => void }) {
     setTestResult(res)
   }
 
+  const hasKey = Boolean(userApiKey.trim())
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-5 backdrop-blur-sm">
       <div className="w-full max-w-md rounded-[28px] bg-white p-6 text-[#10233f] dark:bg-[#142238] dark:text-white shadow-2xl max-h-[85vh] overflow-y-auto">
@@ -1207,6 +1209,12 @@ function PrivacyModal({ onClose }: { onClose: () => void }) {
             <h2 className="text-xl font-black">Cài đặt API & Bảo mật</h2>
           </div>
           <IconButton label="Đóng" onClick={onClose}><X /></IconButton>
+        </div>
+
+        {/* Current Active Mode Badge */}
+        <div className="mt-4 flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50/90 p-3.5 dark:border-white/10 dark:bg-white/5">
+          <span className="text-xs font-black text-slate-700 dark:text-slate-200">Trạng thái hệ thống:</span>
+          <ModeBadge hasUserApiKey={hasKey} />
         </div>
 
         <div className="mt-4 space-y-4 text-xs leading-5 text-slate-600 dark:text-slate-300">
