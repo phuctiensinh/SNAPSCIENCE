@@ -15,7 +15,7 @@ export async function POST(request: Request) {
 
     const apiKey = (userApiKey && typeof userApiKey === 'string' && userApiKey.trim().length > 10)
       ? userApiKey.trim()
-      : (process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY)
+      : (process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY || '')
 
     const isExplicitDemo = Boolean(isDemo)
     const hasValidKeyFormat = Boolean(apiKey && !apiKey.includes('YOUR_GEMINI_API_KEY') && apiKey.trim().length > 10)

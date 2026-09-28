@@ -626,10 +626,7 @@ function ResultScreen({
         <IconButton label="Quay lại" onClick={onBack}>
           <ArrowLeft />
         </IconButton>
-        <span className="font-bold">Khám phá</span>
-        
-        {/* Mode Indicator Badge */}
-        <ModeBadge hasUserApiKey={!isDemo} onClick={onOpenPrivacy} />
+        <span className="font-bold">Khám phá khoa học</span>
 
         <button onClick={onBack} className="ml-auto rounded-full bg-slate-100 p-2 text-slate-500 dark:bg-white/10">
           <MoreHorizontal className="size-5" />
@@ -644,39 +641,6 @@ function ResultScreen({
           <div className="grid h-full place-items-center text-[120px] drop-shadow-2xl">◉</div>
         )}
       </div>
-
-      {/* Explicit API Key Error Warning Box if Gemini call failed */}
-      {apiError && (
-        <div className="mt-4 rounded-2xl border border-rose-300 bg-rose-50 p-4 text-rose-900 dark:border-rose-800 dark:bg-rose-950/60 dark:text-rose-200 shadow-sm">
-          <div className="flex items-start gap-2.5">
-            <AlertTriangle className="size-5 shrink-0 text-rose-600 dark:text-rose-400 mt-0.5" />
-            <div className="flex-1 text-xs leading-5">
-              <b className="block font-black text-sm text-rose-900 dark:text-rose-200">❌ Google Gemini API Bị Lỗi</b>
-              <p className="mt-1 font-semibold text-rose-800 dark:text-rose-300">{apiError}</p>
-              <p className="mt-1.5 text-slate-600 dark:text-slate-300">
-                Do API Key bị sai hoặc lỗi kết nối, hệ thống phải chuyển sang Chế độ Demo (bánh xe).
-              </p>
-              <button
-                onClick={onOpenPrivacy}
-                className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-rose-600 px-3.5 py-2 text-xs font-black text-white shadow hover:bg-rose-700 active:scale-95 transition"
-              >
-                <Key className="size-3.5" /> Cập nhật Gemini API Key hợp lệ
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Demo Mode Notice Banner */}
-      {isDemo && !apiError && (
-        <div className="mt-4 rounded-2xl border border-amber-300/80 bg-amber-50 p-3.5 text-xs text-amber-900 dark:border-amber-800/60 dark:bg-amber-950/50 dark:text-amber-200 flex items-start gap-2.5 shadow-sm">
-          <Sparkles className="size-5 shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
-          <div className="flex-1 leading-5">
-            <b className="block font-black text-amber-900 dark:text-amber-200">Đang ở Chế độ Demo (Dữ liệu mẫu)</b>
-            Để AI nhận diện <b>THẬT 100%</b> bất kỳ vật thể nào bạn chụp (Con chuột máy tính, Đèn bàn, Quạt...), hãy bấm biểu tượng <b>⚙️ Cài đặt</b> và dán Gemini API Key miễn phí từ <a href="https://aistudio.google.com" target="_blank" rel="noreferrer" className="underline font-bold text-sky-700 dark:text-sky-300">aistudio.google.com</a>!
-          </div>
-        </div>
-      )}
 
       {/* Low Confidence Warning */}
       {isLowConfidence && !apiError && (
@@ -1166,135 +1130,50 @@ function CompleteScreen({
   )
 }
 
-function PrivacyModal({ onClose, onKeySaved }: { onClose: () => void; onKeySaved?: () => void }) {
-  const [userApiKey, setUserApiKey] = useState('')
-  const [isSaved, setIsSaved] = useState(false)
-  const [validating, setValidating] = useState(false)
-  const [testResult, setTestResult] = useState<{ valid: boolean; error?: string } | null>(null)
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedKey = localStorage.getItem('snapscience_gemini_api_key') || localStorage.getItem('snapscience_user_api_key') || ''
-      setUserApiKey(savedKey)
-    }
-  }, [])
-
-  const handleSaveKey = () => {
-    if (typeof window !== 'undefined') {
-      const cleanKey = userApiKey.trim()
-      localStorage.setItem('snapscience_gemini_api_key', cleanKey)
-      localStorage.setItem('snapscience_user_api_key', cleanKey)
-      setIsSaved(true)
-      onKeySaved?.()
-      setTimeout(() => setIsSaved(false), 2000)
-    }
-  }
-
-  const handleTestKey = async () => {
-    setValidating(true)
-    setTestResult(null)
-    const res = await validateGeminiApiKey(userApiKey)
-    setValidating(false)
-    setTestResult(res)
-  }
-
-  const hasKey = Boolean(userApiKey.trim())
-
+function PrivacyModal({ onClose }: { onClose: () => void; onKeySaved?: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-5 backdrop-blur-sm">
       <div className="w-full max-w-md rounded-[28px] bg-white p-6 text-[#10233f] dark:bg-[#142238] dark:text-white shadow-2xl max-h-[85vh] overflow-y-auto">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <ShieldCheck className="size-6 text-[#1587e8]" />
-            <h2 className="text-xl font-black">Cài đặt API & Bảo mật</h2>
+            <h2 className="text-xl font-black">Cài đặt & Bảo mật</h2>
           </div>
           <IconButton label="Đóng" onClick={onClose}><X /></IconButton>
         </div>
 
-        {/* Current Active Mode Badge */}
-        <div className="mt-4 flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50/90 p-3.5 dark:border-white/10 dark:bg-white/5">
-          <span className="text-xs font-black text-slate-700 dark:text-slate-200">Trạng thái hệ thống:</span>
-          <ModeBadge hasUserApiKey={hasKey} />
-        </div>
-
         <div className="mt-4 space-y-4 text-xs leading-5 text-slate-600 dark:text-slate-300">
-          {/* Custom Gemini API Key Config Box */}
           <div className="rounded-2xl border border-sky-200 bg-sky-50 p-4 dark:border-sky-800 dark:bg-sky-950/40">
-            <div className="flex items-center justify-between">
-              <b className="block text-sky-900 dark:text-sky-300 text-sm font-black">🔑 Google Gemini AI Key (MIỄN PHÍ 100%)</b>
-            </div>
+            <b className="block text-sky-900 dark:text-sky-300 text-sm font-black">✨ Đã tích hợp Google Gemini AI Vision</b>
             <p className="mt-1 text-xs leading-5">
-              Nhập <b>Google Gemini API Key</b> của bạn để AI nhận diện chính xác 100% bất kỳ vật thể nào (Con chuột máy tính, Đèn bàn, Quạt, Bàn phím...):
+              Hệ thống SnapScience đã được tích hợp sẵn <b>Google Gemini AI Vision</b> thông minh. Mọi người dùng khi truy cập ứng dụng đều có thể chụp ảnh và nhận diện vật thể tự động mà không cần phải cấu hình thêm.
             </p>
-
-            <a
-              href="https://aistudio.google.com/app/apikey"
-              target="_blank"
-              rel="noreferrer"
-              className="mt-2 inline-flex items-center gap-1 font-bold text-[#1587e8] underline hover:text-sky-700 text-[11px]"
-            >
-              👉 Lấy Gemini API Key Miễn Phí Tại aistudio.google.com <ExternalLink className="size-3" />
-            </a>
-
-            <div className="mt-3 flex gap-2">
-              <input
-                type="password"
-                placeholder="AIzaSy..."
-                value={userApiKey}
-                onChange={(e) => { setUserApiKey(e.target.value); setTestResult(null); }}
-                className="flex-1 rounded-xl border border-slate-300 px-3 py-2 text-xs text-slate-800 focus:border-[#1587e8] focus:outline-none dark:border-white/20 dark:bg-[#10233f] dark:text-white"
-              />
-              <button
-                onClick={handleSaveKey}
-                className="rounded-xl bg-[#1587e8] px-3.5 py-2 text-xs font-bold text-white shadow-sm hover:bg-sky-600 active:scale-95 transition"
-              >
-                {isSaved ? '✓ Đã lưu' : 'Lưu Key'}
-              </button>
-              <button
-                onClick={handleTestKey}
-                disabled={validating || !userApiKey}
-                className="rounded-xl border border-sky-300 bg-white px-3 py-2 text-xs font-bold text-sky-700 hover:bg-sky-100 dark:bg-[#142238] dark:text-sky-300 dark:border-sky-700 disabled:opacity-50"
-              >
-                {validating ? 'Đang test...' : '⚡ Test Key'}
-              </button>
-            </div>
-
-            {/* Validation Feedback Status */}
-            {testResult && (
-              <div className="mt-3 rounded-xl p-2.5 text-xs font-semibold leading-5">
-                {testResult.valid ? (
-                  <p className="text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5">
-                    <CheckCircle2 className="size-4 shrink-0 text-emerald-600" />
-                    ✓ Gemini Key hợp lệ! Đã kích hoạt Gemini AI Vision THẬT 100%.
-                  </p>
-                ) : (
-                  <p className="text-rose-700 dark:text-rose-300 flex items-start gap-1.5">
-                    <AlertTriangle className="size-4 shrink-0 text-rose-600 mt-0.5" />
-                    <span>❌ Key bị lỗi: <b>{testResult.error}</b>. (Hãy kiểm tra lại key lấy từ aistudio.google.com).</span>
-                  </p>
-                )}
-              </div>
-            )}
           </div>
 
-          <div className="rounded-2xl bg-sky-50 p-3 dark:bg-sky-950/40">
-            <b className="block text-sky-900 dark:text-sky-300 text-sm">📷 Camera trên thiết bị</b>
-            Camera chỉ được mở khi bạn nhấn "Chụp" hoặc vào màn hình quét. Không bao giờ tự động bật camera ngầm.
+          <div className="rounded-2xl bg-sky-50 p-3.5 dark:bg-sky-950/40">
+            <b className="block text-sky-900 dark:text-sky-300 text-sm font-bold">📷 Quyền Camera riêng tư</b>
+            <p className="mt-0.5 text-xs text-slate-600 dark:text-slate-300">
+              Camera chỉ được khởi động khi bạn chủ động nhấn nút "Chụp để khám phá". Ứng dụng không bao giờ tự động bật camera ngầm.
+            </p>
           </div>
 
-          <div className="rounded-2xl bg-emerald-50 p-3 dark:bg-emerald-950/40">
-            <b className="block text-emerald-900 dark:text-emerald-300 text-sm">🔒 Dữ liệu & Ảnh chụp</b>
-            Ảnh chụp chỉ được gửi tới API server an toàn khi bạn bấm "Phân tích ảnh". Ảnh lịch sử được lưu trực tiếp trên thiết bị của bạn.
+          <div className="rounded-2xl bg-emerald-50 p-3.5 dark:bg-emerald-950/40">
+            <b className="block text-emerald-900 dark:text-emerald-300 text-sm font-bold">🔒 Dữ liệu & Bảo mật cá nhân</b>
+            <p className="mt-0.5 text-xs text-slate-600 dark:text-slate-300">
+              Ảnh chụp chỉ được xử lý qua máy chủ an toàn khi bạn xác nhận "Phân tích ảnh". Toàn bộ lịch sử khám phá và điểm số được lưu trực tiếp trên thiết bị của bạn.
+            </p>
           </div>
 
-          <div className="rounded-2xl bg-amber-50 p-3 dark:bg-amber-950/40">
-            <b className="block text-amber-900 dark:text-amber-300 text-sm">🔑 Demo Mode & Offline</b>
-            Nếu chưa cấu hình Gemini key hoặc mất mạng, ứng dụng tự động chạy ở Demo Mode dữ liệu mẫu local để trải nghiệm không bị ngắt quãng.
+          <div className="rounded-2xl bg-amber-50 p-3.5 dark:bg-amber-950/40">
+            <b className="block text-amber-900 dark:text-amber-300 text-sm font-bold">📱 Hỗ trợ Offline PWA</b>
+            <p className="mt-0.5 text-xs text-slate-600 dark:text-slate-300">
+              Bạn có thể xem lại lịch sử, làm trắc nghiệm và thử nghiệm các mô hình khoa học mini ngay cả khi thiết bị không có kết nối Internet.
+            </p>
           </div>
         </div>
 
         <button onClick={onClose} className="mt-6 w-full rounded-2xl bg-[#1587e8] py-3 text-sm font-extrabold text-white">
-          Tôi đã hiểu & Đồng ý
+          Tôi đã hiểu & Đóng
         </button>
       </div>
     </div>
