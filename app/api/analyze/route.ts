@@ -19,9 +19,10 @@ export async function POST(request: Request) {
 
     const isExplicitDemo = Boolean(isDemo)
     const hasValidKeyFormat = Boolean(apiKey && !apiKey.includes('YOUR_GEMINI_API_KEY') && apiKey.trim().length > 10)
+    const isBase64Data = imageUri.startsWith('data:image/') || (imageUri.length > 500 && !imageUri.startsWith('demo_'))
 
-    // If explicit demo requested OR no API key format is present -> run MockProvider
-    if (isExplicitDemo || !hasValidKeyFormat) {
+    // If explicit demo requested OR no API key format is present OR payload is preset demo key -> run MockProvider
+    if (isExplicitDemo || !hasValidKeyFormat || !isBase64Data) {
       const mockProvider = new MockProvider()
       const result = await mockProvider.analyzeImage(imageUri, { prompt })
       return NextResponse.json({

@@ -1538,11 +1538,29 @@ export default function Page() {
     setFlow('preview')
   }
 
-  // Handle demo object selection
+  // Handle demo object selection from Camera
   const handleSelectDemoObject = (objName: string) => {
-    setDemoObjectName(objName)
+    const matchedKey = Object.keys(MOCK_DATABASE).find(k => objName.toLowerCase().includes(k)) || 'bánh xe'
+    const res = MOCK_DATABASE[matchedKey] || MOCK_DATABASE['bánh xe']
+    setCurrentResult(res)
     setCapturedImage('')
-    setFlow('preview')
+    setIsDemoMode(true)
+    setAnalysisApiError(undefined)
+    setPreviouslyScanned(undefined)
+    setFlow('result')
+  }
+
+  // Handle topic click from Khám phá & Học tabs
+  const handleSelectTopicFromDiscover = (topicHint?: string) => {
+    const lower = (topicHint || '').toLowerCase()
+    const matchedKey = Object.keys(MOCK_DATABASE).find(k => lower.includes(k) || k.includes(lower)) || 'bánh xe'
+    const res = MOCK_DATABASE[matchedKey] || MOCK_DATABASE['bánh xe']
+    setCurrentResult(res)
+    setCapturedImage('')
+    setIsDemoMode(false)
+    setAnalysisApiError(undefined)
+    setPreviouslyScanned(undefined)
+    setFlow('result')
   }
 
   // Handle analysis completion
@@ -1599,11 +1617,6 @@ export default function Page() {
     const updated = deleteHistoryItem(id)
     setHistoryItems(updated)
     setUserProgress(getUserProgress())
-  }
-
-  const handleSelectTopicFromDiscover = (topicHint?: string) => {
-    const matchedKey = Object.keys(MOCK_DATABASE).find(k => (topicHint || '').toLowerCase().includes(k)) || 'bánh xe'
-    handleSelectDemoObject(matchedKey)
   }
 
   // Render screens

@@ -68,21 +68,35 @@ export function stopCameraStream(stream: MediaStream | null) {
   }
 }
 
-export function captureVideoFrame(videoElement: HTMLVideoElement): string | null {
+export function captureVideoFrame(videoElement: HTMLVideoElement, maxDimension = 1024): string | null {
   if (!videoElement || !videoElement.videoWidth || !videoElement.videoHeight) {
     return null
   }
 
   try {
+    let width = videoElement.videoWidth
+    let height = videoElement.videoHeight
+
+    // Resize image to maxDimension (e.g. 1024px) for fast network upload & instant AI processing
+    if (width > maxDimension || height > maxDimension) {
+      if (width > height) {
+        height = Math.round((height * maxDimension) / width)
+        width = maxDimension
+      } else {
+        width = Math.round((width * maxDimension) / height)
+        height = maxDimension
+      }
+    }
+
     const canvas = document.createElement('canvas')
-    canvas.width = videoElement.videoWidth
-    canvas.height = videoElement.videoHeight
+    canvas.width = width
+    canvas.height = height
 
     const ctx = canvas.getContext('2d')
     if (!ctx) return null
 
-    ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height)
-    return canvas.toDataURL('image/jpeg', 0.88)
+    ctx.drawImage(videoElement, 0, 0, width, height)
+    return canvas.toDataURL('image/jpeg', 0.78)
   } catch (err) {
     console.error('Failed to capture canvas frame:', err)
     return null
@@ -95,7 +109,7 @@ export interface FileValidationResult {
   dataUrl?: string
 }
 
-export function validateAndReadImageFile(file: File, maxSizeMB = 10): Promise<FileValidationResult> {
+export function validateAndReadImageFile(file: File, maxSizeMB = 10, maxDimension = 1024): Promise<FileValidationResult> {
   return new Promise((resolve) => {
     if (!file) {
       resolve({ valid: false, error: 'Không tìm thấy tập tin.' })
@@ -128,11 +142,46 @@ export function validateAndReadImageFile(file: File, maxSizeMB = 10): Promise<Fi
     const reader = new FileReader()
     reader.onload = (e) => {
       const dataUrl = e.target?.result as string
-      if (dataUrl) {
-        resolve({ valid: true, dataUrl })
-      } else {
+      if (!dataUrl) {
         resolve({ valid: false, error: 'Không thể đọc dữ liệu ảnh.' })
+        return
       }
+
+      // Resize uploaded image to speed up transfer
+      const img = new Image()
+      img.onload = () => {
+        try {
+          let width = img.width
+          let height = img.height
+
+          if (width > maxDimension || height > maxDimension) {
+            if (width > height) {
+              height = Math.round((height * maxDimension) / width)
+              width = maxDimension
+            } else {
+              width = Math.round((width * maxDimension) / height)
+              height = maxDimension
+            }
+          }
+
+          const canvas = document.createElement('canvas')
+          canvas.width = width
+          canvas.height = height
+          const ctx = canvas.getContext('2d')
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height)
+            resolve({ valid: true, dataUrl: canvas.toDataURL('image/jpeg', 0.78) })
+            return
+          }
+        } catch {
+          // Fallback if canvas resize fails
+        }
+        resolve({ valid: true, dataUrl })
+      }
+      img.onerror = () => {
+        resolve({ valid: true, dataUrl })
+      }
+      img.src = dataUrl
     }
     reader.onerror = () => {
       resolve({ valid: false, error: 'Lỗi khi đọc file ảnh.' })
@@ -140,3 +189,4 @@ export function validateAndReadImageFile(file: File, maxSizeMB = 10): Promise<Fi
     reader.readAsDataURL(file)
   })
 }
+

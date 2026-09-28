@@ -120,7 +120,7 @@ BẮT BUỘC trả về đúng cấu trúc JSON sau (Việt hóa 100%):
       }
     }
 
-    if (base64Data) {
+    if (base64Data && base64Data.length > 100 && !base64Data.startsWith('demo_')) {
       requestBody.contents[0].parts.push({
         inlineData: {
           mimeType: mimeType,
@@ -129,13 +129,12 @@ BẮT BUỘC trả về đúng cấu trúc JSON sau (Việt hóa 100%):
       })
     }
 
-    // Verified working active candidate models on Google Gemini API
+    // Official active fast models on Google Gemini API
     const candidateModels = [
-      'gemini-2.5-flash',
-      'gemini-3.6-flash',
-      'gemini-2.0-flash-exp',
-      'gemini-1.5-flash-latest',
-      'gemini-1.5-flash'
+      'gemini-1.5-flash',
+      'gemini-2.0-flash',
+      'gemini-1.5-flash-8b',
+      'gemini-2.0-flash-exp'
     ]
 
     let lastError: any = null
