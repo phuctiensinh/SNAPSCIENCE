@@ -153,6 +153,14 @@ BẮT BUỘC trả về đúng cấu trúc JSON sau (Việt hóa 100%):
           if (!response.ok) {
             const errText = await response.text()
 
+            // If 429 (Rate limit / Quota exceeded) -> try switching to next candidate model
+            if (response.status === 429) {
+              console.warn(`Gemini model ${modelName} returned 429 (rate limit), trying next model...`)
+              lastError = new Error(`Lỗi Gemini (429): API Key đã tạm thời vượt quá giới hạn tần suất gọi miễn phí (Quota/Rate Limit). Vui lòng thử lại sau ít phút.`)
+              await new Promise(r => setTimeout(r, 500))
+              break // break attempt loop to try next candidate model
+            }
+
             // If 503 (temporary high demand) -> wait 400ms and retry or switch model
             if (response.status === 503) {
               console.warn(`Gemini model ${modelName} returned 503 (high demand), retrying/switching...`)
